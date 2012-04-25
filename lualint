@@ -204,13 +204,46 @@ local found_sets = false
 local found_gets = false
 local parse_failed = false
 local import_failed = true
-
 -- print("args", arg[1])
+
+-- Used to cache all printed output
+local g_output = {}
+local function lint_output(filename, row, description)
+   -- Helper to gather all errors 
+   local file_info = nil
+   if g_output[filename] == nil then
+      file_info = {}
+   else 
+      file_info = g_output[filename]
+   end
+   
+   local error_info = {row, description}
+   table.insert(file_info, error_info)
+   g_output[filename] = file_info
+end
+
+local function print_lint_output()
+   -- Prints all errors sorted by row number
+
+   local function row_compare(a,b)
+      -- a[1] and b[1] contains the row numbers for the errors
+      return tonumber(a[1]) < tonumber(b[1])
+   end
+
+   for file,info in pairs(g_output) do
+      table.sort(info, row_compare)
+      for k,error in pairs(info) do
+	 -- error[1] is the row and error[2] is the description
+      	 print(string.format("%s:%d: %s", file, error[1], error[2]))
+      end
+   end
+end
+
 local function lint(filename, relaxed)
   local modules, declared, lint_ignored, refs = scanfile(filename)
 
   if not modules then
-    print(string.format("%s:%d: *** could not parse: %s ", filename, 1, declared))
+    lint_output(filename, 1, string.format("*** could not parse: %s ",declared))
     parse_failed = true
     return
   end
@@ -219,12 +252,12 @@ local function lint(filename, relaxed)
   for i,module in ipairs(modules) do
     local path = locate(module)
     if not path then 
-      print(string.format("%s:%d: could not find imported module %s ", filename, 1, module))
+      lint_output(filename, 1, string.format("*** could not find imported module %s ", module))
       import_failed = true
     else
       local success, imported_declare, _, _ = scanfile(path)
       if not success then
-        print(string.format("%s:%d: could not parse import: %s ", path, 1, imported_declare))
+        lint_output(path, 1, string.format("*** could not parse import: %s ", imported_declare))
         import_failed = true
       else
         for i,declared in ipairs(imported_declare) do
@@ -270,7 +303,7 @@ local function lint(filename, relaxed)
       if r.name ~= self_name and not declaredset[r.name] then
         was_set[r.name] = true
         if not relaxed then
-          print(string.format("%s:%d: *** global SET of %s", filename, r.lineno, r.name))
+          lint_output(filename, r.lineno, string.format("*** global SET of %s", r.name))
           found_sets = true
         end
       end
@@ -280,7 +313,7 @@ local function lint(filename, relaxed)
   for f,t in pairs(refs) do
     for _,r in ipairs(t.GETGLOBAL) do
       if will_warn_for(r.name) then
-        print(string.format("%s:%d: global get of %s", filename, r.lineno, r.name))
+        lint_output(filename, r.lineno, string.format("*** global get of %s", r.name))
         found_gets = true
       end
     end
@@ -303,6 +336,9 @@ for i,v in ipairs(arg) do
     lint(v, relaxed_mode)
   end
 end
+
+-- Prints all of the errors per file - sorted by row number.
+print_lint_output()
 
 if parse_failed then
   os.exit(3)
