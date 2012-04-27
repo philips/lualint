@@ -117,14 +117,14 @@ local function locate(name)
   local paths = ""
 
   if type(LUA_PATH) == "string" then
-     -- Use the LUA_PATH variable
-     paths = LUA_PATH
-  else 
-     -- Try to get the LUA_PATH env variable
-     local env_lua_path = os.getenv "LUA_PATH"
-     if type(env_lua_path) == "string" then
-	paths = env_lua_path
-     end
+    -- Use the LUA_PATH variable
+    paths = LUA_PATH
+  else
+    -- Try to get the LUA_PATH env variable
+    local env_lua_path = os.getenv "LUA_PATH"
+    if type(env_lua_path) == "string" then
+      paths = env_lua_path
+    end
   end
 
   -- Add current directory
@@ -132,7 +132,7 @@ local function locate(name)
 
   for path in string.gfind(paths, "[^;]+") do
     -- Construct full filename from path, module name and file extension
-    path = path .. name .. ".lua"     
+    path = path .. name .. ".lua"
     if fileexists(path) then
       return path
     end
