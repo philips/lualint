@@ -128,11 +128,12 @@ local function locate(name)
   end
 
   -- Add current directory
-  paths = paths .. ";./"
+  paths = paths .. ";./?.lua"
 
   for path in string.gfind(paths, "[^;]+") do
     -- Construct full filename from path, module name and file extension
-    path = path .. name .. ".lua"
+    path = string.gsub(path, "?", name)
+
     if fileexists(path) then
       return path
     end
