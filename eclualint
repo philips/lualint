@@ -4,14 +4,13 @@ pushd $(dirname $0) >/dev/null 2>&1
 here=$(pwd)
 popd >/dev/null 2>&1
 
-#/opt/msys/ecelerity/bin/eclua \
-#  $here/lualint $*
-
-# Run against development branch.
-# XXX: FIXME: Allow env variable to set the path
-# XXX: need to override path algorithm in lualint so it searches
-#      for modules like eclua.
-ecsrcdir=$HOME/src/Platform2
-LD_LIBRARY_PATH=$ecsrcdir $ecsrcdir/modules/scriptlets/exe/eclua \
-  -E $ecsrcdir/modules \
-  $here/lualint $*
+# Turn on relaxed mode by default.
+if [ -z "$ECSRCDIR" ]; then
+  /opt/msys/ecelerity/bin/eclua \
+    $here/lualint -r $*
+else
+  # Run against development branch.
+  LD_LIBRARY_PATH=$ECSRCDIR $ECSRCDIR/modules/scriptlets/exe/eclua \
+    -E $ECSRCDIR/modules \
+    $here/lualint -r $*
+fi
