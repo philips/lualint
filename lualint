@@ -100,6 +100,15 @@ local ignoreget = Set{
 "pcall", "print", "rawequal", "rawget", "rawset", "require",
 "setfenv", "setmetatable", "string", "table", "tonumber", "tostring",
 "type", "unpack", "xpcall",
+
+-- thrlua extensions
+"_TLS", "_OSTLS",
+
+-- Defined by scriptlet module.
+"msys",
+
+-- Lua 5.1-isms
+"package", "module",
 }
 
 local function fileexists(fname)
@@ -120,6 +129,8 @@ local function locate(name)
   if type(LUA_PATH) == "string" then
     -- Use the LUA_PATH variable
     paths = LUA_PATH
+  elseif package.cpath ~= nil and package.path ~= nil then
+    paths = package.cpath .. ";" .. package.path
   else
     -- Try to get the LUA_PATH env variable
     local env_lua_path = os.getenv "LUA_PATH"
@@ -131,9 +142,12 @@ local function locate(name)
   -- Add current directory
   paths = paths .. ";./?.lua"
 
+  -- Replace dots with path separator in module name.
+  local mapped_name = name:gsub("%.", "/")
+
   for path in string.gfind(paths, "[^;]+") do
     -- Construct full filename from path, module name and file extension
-    path = string.gsub(path, "?", name)
+    path = string.gsub(path, "?", mapped_name)
 
     if fileexists(path) then
       return path
@@ -154,6 +168,11 @@ local function scanfile(filename)
 
   if not fileexists(filename) then
     return nil, "file "..filename.." does not exist"
+  end
+
+  -- Ignore DSOs
+  if filename:match("%.so$") then
+    return true, {}, {}, {}
   end
 
   -- Run once to see if it parses correctly
