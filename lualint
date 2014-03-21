@@ -188,14 +188,17 @@ local function scanfile(filename)
   assert(os.remove("lualint.tmp"))
 
   local bc = assert(io.popen(LUAC .. " -l -p "..filename))
-  
+
   for line in bc:lines() do
     -- main <examples/xhtml2wiki.lua:0> (64 instructions, 256 bytes at 0x805c1a0)
     -- function <examples/xhtml2wiki.lua:13> (6 instructions, 24 bytes at 0x805c438)
     local found, _, type, fname = string.find(line, "(%w+) <([^>]+)>")
     if found then 
-      if context == "main" then fname="*MAIN*" end
-      curfunc = fname
+      if type == "main" then
+        curfunc = type
+      else
+        curfunc = fname
+      end
     end
     
     -- print("sawlast", saw_last)
@@ -221,6 +224,10 @@ local function scanfile(filename)
       table.insert(t[instr], err)
       refs[curfunc] = t
       saw_last = gname
+
+      if instr == "SETGLOBAL" and curfunc == "main" then
+        table.insert(declared, gname)
+      end
     else
       saw_last = nil
     end

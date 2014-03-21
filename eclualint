@@ -7,10 +7,10 @@ popd >/dev/null 2>&1
 # Turn on relaxed mode by default.
 if [ -z "$ECSRCDIR" ]; then
   /opt/msys/ecelerity/bin/eclua \
-    $here/lualint -r $*
+    $here/lualint $*
 else
   # Run against development branch.
   LD_LIBRARY_PATH=$ECSRCDIR $ECSRCDIR/modules/scriptlets/exe/eclua \
     -E $ECSRCDIR/modules \
-    $here/lualint -r $*
+    $here/lualint $*
 fi
