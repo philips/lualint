@@ -1,4 +1,4 @@
-#!/usr/bin/env lua
+#!/opt/msys/3rdParty/bin/rclua
 
 --[[ 
 
@@ -82,6 +82,7 @@ tricks in MOO.
  
 ]]
 
+local LUAC = "/opt/msys/3rdParty/bin/rcluac"
 
 local function Set(l) 
   local t = {}
@@ -157,7 +158,7 @@ local function scanfile(filename)
 
   -- Run once to see if it parses correctly
   
-  if not os.execute("luac -o lualint.tmp "..filename) then
+  if not os.execute(LUAC .. " -o lualint.tmp "..filename) then
     return nil, "file "..filename.." did not successfully parse"
   end
 
@@ -167,7 +168,7 @@ local function scanfile(filename)
 
   assert(os.remove("lualint.tmp"))
 
-  local bc = assert(io.popen("luac -l -p "..filename))
+  local bc = assert(io.popen(LUAC .. " -l -p "..filename))
   
   for line in bc:lines() do
     -- main <examples/xhtml2wiki.lua:0> (64 instructions, 256 bytes at 0x805c1a0)
