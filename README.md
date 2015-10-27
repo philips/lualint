@@ -3,6 +3,12 @@ source code.
 
 `Usage: lualint [-r|-s] filename.lua [ [-r|-s] [filename.lua] ...]`
 
+`Usage: eclualint [-r|-s] filename.lua [ [-r|-s] [filename.lua] ...]`
+
+eclualint is similar to lualint, but uses eclua, which has access
+to all the custom Lua modules available in the Momentum system.
+If you are writing Lua code for Momentum, you will want to use eclualint.
+
 ## Description
 
 lualint uses luac's bytecode listing. It reports all accesses to undeclared

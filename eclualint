@@ -12,7 +12,6 @@ if [ -z "$srcdir" ]; then
   fi
 fi
 
-# Turn on relaxed mode by default.
 if [ -z "$srcdir" ]; then
   /opt/msys/ecelerity/bin/eclua \
     $here/lualint $*
