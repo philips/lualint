@@ -18,6 +18,6 @@ if [ -z "$srcdir" ]; then
 else
   # Run against development branch.
   LD_LIBRARY_PATH=$srcdir $srcdir/modules/scriptlets/exe/eclua \
-    -E $srcdir/modules \
+    -E $srcdir/modules:$srcdir/modules/cloud \
     $here/lualint $*
 fi
