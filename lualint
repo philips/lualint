@@ -231,6 +231,12 @@ local function scanfile(filename)
     else
       saw_last = nil
     end
+
+    --         37      [32]    GETTABLE        8 2 -15 ; "lint_ignore"
+    local found, _, lineno, gname = string.find(line, '%[(%d+)%]%s+GETTABLE.-;%s"(lint_ignore)"')
+    if found then
+      saw_last = gname
+    end
   end
   bc:close()
   return modules, declared, lint_ignored, refs
