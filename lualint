@@ -292,18 +292,22 @@ local function lint(filename, relaxed)
   
   local imported_declare_set = {}
   for i,module in ipairs(modules) do
-    local path = locate(module)
-    if not path then 
-      lint_output(filename, 1, string.format("*** could not find imported module %s ", module))
-      import_failed = true
+    if module == "thread" or module == "sparkpost_site_config" or module == "msys" then
+      imported_declare_set[module] = true
     else
-      local success, imported_declare, _, _ = scanfile(path)
-      if not success then
-        lint_output(path, 1, string.format("*** could not parse import: %s ", imported_declare))
+      local path = locate(module)
+      if not path then 
+        lint_output(filename, 1, string.format("*** could not find imported module %s ", module))
         import_failed = true
       else
-        for i,declared in ipairs(imported_declare) do
-          imported_declare_set[declared] = true
+        local success, imported_declare, _, _ = scanfile(path)
+        if not success then
+	      lint_output(path, 1, string.format("*** could not parse import: %s ", imported_declare))
+	      import_failed = true
+        else
+	      for i,declared in ipairs(imported_declare) do
+	        imported_declare_set[declared] = true
+	      end
         end
       end
     end
