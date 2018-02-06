@@ -7,9 +7,14 @@ popd >/dev/null 2>&1
 srcdir="$ECSRCDIR"
 if [ -z "$srcdir" ]; then
   # See if we're in a source directory already.
-  if [ -x $(pwd)/modules/scriptlets/exe/eclua ]; then
-    srcdir=$(pwd)
-  fi
+  searchdir=$(pwd)
+  while [ "$searchdir" != "/" ]; do
+    if [ -x "$searchdir/modules/scriptlets/exe/eclua" ]; then
+      srcdir="$searchdir"
+      break
+    fi
+    searchdir=$(dirname $searchdir)
+  done
 fi
 
 if [ -z "$srcdir" ]; then
