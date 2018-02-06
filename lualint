@@ -166,10 +166,6 @@ local function scanfile(filename)
 
   local context, curfunc
 
-  if not fileexists(filename) then
-    return nil, "file "..filename.." does not exist"
-  end
-
   -- Ignore DSOs
   if filename:match("%.so$") then
     return true, {}, {}, {}
@@ -282,6 +278,12 @@ local function print_lint_output()
 end
 
 local function lint(filename, relaxed)
+  if not fileexists(filename) then
+    -- Warn but ignore files that don't exist
+    lint_output(filename, 1, "*** could not parse: file "..filename.." does not exist")
+    return
+  end
+
   local modules, declared, lint_ignored, refs = scanfile(filename)
 
   if not modules then
