@@ -130,7 +130,7 @@ local function locate(name)
   -- Add current directory
   paths = paths .. ";./?.lua"
 
-  for path in string.gfind(paths, "[^;]+") do
+  for path in string.gmatch(paths, "[^;]+") do
     -- Construct full filename from path, module name and file extension
     path = string.gsub(path, "?", name)
 
@@ -195,6 +195,14 @@ local function scanfile(filename)
     
     -- 	4	[2]	GETGLOBAL	0 0	; require
     local found, _, lineno, instr, gname = string.find(line, "%[(%d+)%]%s+([SG]ETGLOBAL).-; (.+)")
+    if not found then -- lua 5.3 to ???
+        -- 	1	[4]	SETTABUP 	0 0 1k	; _ENV "g_var" 3
+        found, _, lineno, instr, gname = string.find(line, "%[(%d+)%]%s+([SG]ETTABUP).-; (.+)")
+        if found then
+            instr = instr:gsub("ETTABUP", "ETGLOBAL", 1)
+            gname = gname:gsub("_ENV ", "", 1):gsub('^"([^"]*)".*', "%1", 1)
+        end
+    end
     if found then
       local t = refs[curfunc] or {SETGLOBAL={n=0}, GETGLOBAL={n=0}}
       local err = {name=gname, lineno=lineno}
@@ -329,7 +337,7 @@ local function lint(filename, relaxed)
   end
 end
 
-if arg.n == 0 then
+if arg.n == 0 or #arg == 0 then
   print("usage: lualint filename.lua [filename.lua ...]")
   os.exit(1)
 end
